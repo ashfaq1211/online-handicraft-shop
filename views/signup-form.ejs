@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form action="/postSignUpForm" method="post">
+        <input type="text" name="name" id="name" placeholder="name">
+        <input type="text" name="email" id="email" placeholder="email">
+        <input type="text" name="password" id="password" placeholder="password">
+        <button type="submit">Submit</button>
+    </form>
+    <br>
+    <div>
+        <ul>
+           <% users.forEach( (user) => { %>
+            <li><%= user.name %></li>
+            <li><%= user.email %></li>
+            <li><%= user.password %></li>
+           <% } ) %>
+        </ul>
+    </div>
+<script type="text/javascript">
+    var thisStatus = "<%= status %>";
+    if (thisStatus == 400 || '400') {
+        alert('Email Already Exists')
+    }
+</script>
+</body>
+</html>
