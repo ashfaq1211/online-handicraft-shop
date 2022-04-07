@@ -16,11 +16,12 @@ app.get('/', (req, res) => {
     res.send('Hello World');
 });
 
-// test-form route
+// without status param
 app.get('/getSignUpForm', async (req, res) => {
     const users = await UserModel.find({});
     res.render('signup-form', { users: users, status: null });
 });
+// with status param
 app.get('/getSignUpForm/:status', async (req, res) => {
     console.log(req.query);
     const users = await UserModel.find({});
