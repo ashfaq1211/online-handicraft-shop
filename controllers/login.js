@@ -1,22 +1,21 @@
 const UserModel = require('../models/user');
 
-async function signUp(payload) {
+async function login(payload) {
     try {
-        const existingUser =await UserModel.findOne({
-            'name': payload.name,
+        const existingUser = await UserModel.findOne({
             'email': payload.email,
             'password': payload.password
         });
 
         if (existingUser) {
-            // SESSION CREATION LOGIC
-            return { status: 200, message: 'Logged In Successfully!', data: null };
+            console.log('Here');
+            return { status: 200, message: 'Logged In Successfully!', data: existingUser };
         } else {
-            return { status: 400, message: 'Incorrect Credentials', data: user };
+            return { status: 400, message: 'Incorrect Credentials', data: null };
         }
     } catch(err) {
         console.log('Login User => ', err);
     }
 };
 
-module.exports = signUp;
+module.exports = login;

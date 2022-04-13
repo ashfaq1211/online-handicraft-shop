@@ -7,21 +7,11 @@
     <title>Document</title>
 </head>
 <body>
-    <form action="/postSignUpForm" method="post">
-        <input type="text" name="name" id="name" placeholder="name">
+    <form action="/postLoginForm" method="post">
         <input type="text" name="email" id="email" placeholder="email">
         <input type="text" name="password" id="password" placeholder="password">
-        <button type="submit">Submit</button>
+        <button type="submit">Log In</button>
     </form>
     <br>
-<script type="text/javascript">
-    var thisStatus = "<%= status %>";
-    console.log(thisStatus);
-    if (thisStatus == null) {
-
-    } else if (thisStatus == 400 || thisStatus == '400') {
-        alert('Email Already Exists')
-    }
-</script>
 </body>
 </html>
