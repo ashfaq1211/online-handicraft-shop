@@ -12,7 +12,15 @@ const UserSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true
-    }
+    },
+    cartItems: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'product'
+    }],
+    purchasedItems: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'product'
+    }]
 });
 
 const UserModel = mongoose.model("user", UserSchema);

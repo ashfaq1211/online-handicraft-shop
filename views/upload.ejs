@@ -12,9 +12,6 @@
             <div class="navbar-header">
                 <p class="navbar-brand"><a href="/">Arts & Crafts</a></p>
             </div>
-            <ul class="nav navbar-nav navbar-right">
-                <li id="mp"><a href="/login">Login</a></li>
-            </ul>
         </div>
     </nav>
 </head>
@@ -134,33 +131,32 @@
 <body>
     <div class="container">
         <br>
-        <form action="/postSignUpForm" method="post">
+        <form action="/upload" method="post">
             <div class="form-group">
                 <label>Name</label>
                 <input class="form-control" type="text" name="name" id="name" placeholder="name">
-                <label>Email</label>
-                <input class="form-control" type="text" name="email" id="email" placeholder="email">
-                <label>Password</label>
-                <input class="form-control" type="text" name="password" id="password" placeholder="password">
+                <label>Type</label>
+                <input class="form-control" type="text" name="type" id="type" placeholder="type">
+                <label>Price</label>
+                <input class="form-control" type="number" name="price" id="price" placeholder="price">
+                <label>Discount</label>
+                <input class="form-control" type="number" name="discount" id="discount" placeholder="discount">
+                <label>Description</label>
+                <input class="form-control" type="text" name="description" id="description" placeholder="description">
+                <label>Quantity</label>
+                <input class="form-control" type="number" name="quantity" id="quantity" placeholder="quantity">
+                <label>Image URL</label>
+                <input class="form-control" type="text" name="image" id="image" placeholder="image">
+                <!-- <label>Image</label>
+                <input class="form-control" type="file" name="image" id="image"> -->
             </div>
-            <button class="btn btn-primary" type="submit">Submit</button>
+            <button class="btn btn-primary" type="submit">Upload</button>
         </form>
     </div>
     <div class="footer-padding"></div>
     <div class="footer">
         <p>Arts & Crafts</p>
     </div>
-
-    <br>
-    <script type="text/javascript">
-        var thisStatus = "<%= status %>";
-        console.log(thisStatus);
-        if (thisStatus == null) {
-
-        } else if (thisStatus == 400 || thisStatus == '400') {
-            alert('Email Already Exists')
-        }
-    </script>
 </body>
 
 </html>
