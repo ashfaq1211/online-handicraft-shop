@@ -13,6 +13,7 @@ const UserModel = require('./models/user');
 const singUp = require('./controllers/signUp')
 const login = require('./controllers/login');
 const ProductModel = require('./models/product');
+const CartModel = require('./models/cart');
 
 app.set('view engine', 'ejs');
 app.use(session({
@@ -125,28 +126,88 @@ app.get('/description/:id', async (req, res) => {
 
 
 // ADD TO CART
-app.get('/addToCart/:id', async (req, res) => {
-    const id = req.params.id;
+// app.get('/addToCart/:id', async (req, res) => {
+//     const id = req.params.id;
+//     if (req.session && req.session.loggedin) {
+//         const user = await UserModel.findOneAndUpdate(
+//             { email: req.session.email },
+//             { $push: { cartItems: mongoose.Types.ObjectId(id) } }    
+//         );
+//         res.redirect('/');
+//     } else {
+//         res.redirect('/');
+//     }
+// });
+
+// GET CART
+app.get('/cart', async (req, res) => {
     if (req.session && req.session.loggedin) {
-        const user = await UserModel.findOneAndUpdate(
-            { email: req.session.email },
-            { $push: { cartItems: mongoose.Types.ObjectId(id) } }    
-        );
-        res.redirect('/');
+        const user = await UserModel.findOne({ email: req.session.email });
+        const cart = await CartModel.findOne({ user: user._id }).populate('products.product');
+        res.render('cart', { isLoggedIn: true, email: req.session.email, cart });
     } else {
         res.redirect('/');
     }
 });
 
-// GET CART
-app.get('/cart', async (req, res) => {
-    const user = await UserModel.findOne({ email: req.session.email }).populate('cartItems')
-    let cartItems;
-    if (user && req.session && req.session.loggedin) {
-        res.render('cart', { isLoggedIn: true, email: req.session.email, cartItems });
+// ADD TO CART
+app.get('/addToCart/:id', async (req, res) => {
+    const id = req.params.id;
+    const product = await ProductModel.findOne({ _id: id });
+    const user = await UserModel.findOne({ email: req.session.email });
+    const cart = await CartModel.findOne({ user: user._id }).populate('products.product');
+    if (cart && user && cart.products.length > 0) {
+        cart.products.forEach( async (productData, index) => {
+            console.log('====================================');
+            console.log('PRODUCT => ', productData.product);
+            console.log('====================================');
+            if (id == productData.product._id) {
+                cart.products[index].quantity += 1;
+                cart.totalPrice += product.price;
+                cart.totalDiscount += product.discount;
+                await CartModel.findOneAndUpdate({ _id: cart._id }, cart);
+                res.status(200).send('Product Quantity Updated In Cart');
+            };
+        });        
+    };
+    if (cart && user && cart.products.length <= 0) {
+        cart.products.push({ product: product._id, quantity: 1 });
+        cart.totalPrice += product.price;
+        cart.totalDiscount += product.discount;
+        await CartModel.findOneAndUpdate({ _id: cart._id }, cart);
+        res.status(200).send('Product Added To Cart');
+    } else if (user && !cart) {
+        const cart = {
+            user: user._id,
+            products: [{ product: product._id, quantity: 1 }],
+            totalPrice: product.price,
+            totalDiscount: product.discount,
+            shippingFee: 50
+        }
+        const newCart = new CartModel(cart);
+        const cartId = await newCart.save();
+        await UserModel.findOneAndUpdate({ _id: user._id }, { $set: { cart: cartId } })
+        res.status(200).send('Product Added to Cart');
     } else {
-        res.redirect('/');
+        res.redirect('/logout');
+    };
+});
+
+// ADD TO PURCHASED FROM CART
+app.get('/checkoutFromCart/:id', async (req, res) => {
+    const user = await UserModel.findOne({ email: req.session.email });
+    const cart = await CartModel.findOne({ user: user._id }).populate('products.product');
+    if ( user.purchasedItems && user.purchasedItems.length > 0 ) {
+        cart.products.forEach( product => {
+            user.purchasedItems.push(product)
+        });
+    } else {
+        user.purchasedItems = [];
+        cart.products.forEach( product => {
+            user.purchasedItems.push(product)
+        });
     }
+    await UserModel.findOneAndUpdate({ _id: user._id }, user);
 });
 
 mongoose.connect('mongodb://localhost:27017/shop',{
