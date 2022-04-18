@@ -8,8 +8,20 @@ const mongoose = require('mongoose');
 const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
+const nodemailer = require('nodemailer');
+let testAccount = nodemailer.createTestAccount();
+const sendMail = nodemailer.createTransport({
+    host: "smtp.ethereal.email",
+    port: 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: testAccount.user, // generated ethereal user
+      pass: testAccount.pass, // generated ethereal password
+    }
+});
 
 const UserModel = require('./models/user');
+const AdminModel = require('./models/admin');
 const singUp = require('./controllers/signUp')
 const login = require('./controllers/login');
 const ProductModel = require('./models/product');
@@ -67,7 +79,12 @@ app.post('/postLoginForm', async (req, res) => {
     if (data.status == 200) {
         req.session.loggedin = true;
 		req.session.email = req.body.email;
-        res.redirect('/');
+        req.session.type = data.data.type
+        if (!data.data.type || data.data.type == 'customer') {
+            res.redirect('/');
+        } else {
+            res.redirect('/admin');
+        }
     } else {
         res.redirect('/getLoginForm');
     }
@@ -79,9 +96,23 @@ app.get('/logout', async (req, res) => {
     res.redirect('/')
 });
 
+// ADMIN
+
+app.get('/admin', async (req, res) => {
+    if (req.session && req.session.loggedin && req.session.type == 'admin') {
+        res.render('admin')
+    } else {
+        res.redirect('/');
+    }
+});
+
 // ADD PRODUCT
 app.get('/upload', async (req, res) => {
-    res.render('upload')
+    if (req.session && req.session.loggedin && req.session.type == 'admin') {
+        res.render('upload')
+    } else {
+        res.redirect('/');
+    }
 });
 // const upload = multer({
 //     dest: "/uploads/images/products"
@@ -110,6 +141,16 @@ app.post('/upload', async (req, res) => {
     const product = new ProductModel(data);
     product.save();
     res.redirect('/');
+});
+
+
+app.get('/customerAndOrders', async (req, res) => {
+    if (req.session && req.session.loggedin && req.session.type == 'admin') {
+        const customers = await UserModel.find({}).populate('purchasedItems.product')
+        res.render('customer-and-orders', { customers: customers })
+    } else {
+        res.redirect('/');
+    }
 });
 
 
@@ -194,7 +235,7 @@ app.get('/addToCart/:id', async (req, res) => {
 });
 
 // ADD TO PURCHASED FROM CART
-app.get('/checkoutFromCart/:id', async (req, res) => {
+app.get('/checkoutFromCart', async (req, res) => {
     const user = await UserModel.findOne({ email: req.session.email });
     const cart = await CartModel.findOne({ user: user._id }).populate('products.product');
     if ( user.purchasedItems && user.purchasedItems.length > 0 ) {
@@ -208,6 +249,28 @@ app.get('/checkoutFromCart/:id', async (req, res) => {
         });
     }
     await UserModel.findOneAndUpdate({ _id: user._id }, user);
+    sendMail.sendMail({
+        from: 'ashfaqulislam1211@gmail.com',
+        to: req.session.email,
+        subject: 'Purchase Receipt',
+        text: ``
+    }, (err, info) => {
+        if (err) {
+            console.log('Send Mail Error => ', err);
+        } else {
+            console.log('Send Mail Info => ', info);
+        }
+    });
+});
+
+// USER ACCOUNT
+app.get('/account', async (req, res) => {
+    const user = await UserModel.findOne({ email: req.session.email }).populate('purchasedItems.product');
+    if (req.session && req.session.loggedin) {
+        res.render('account', { isLoggedIn: true, email: req.session.email, user } );
+    } else {
+        res.redirect('/');
+    }
 });
 
 mongoose.connect('mongodb://localhost:27017/shop',{

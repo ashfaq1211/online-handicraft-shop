@@ -1,15 +1,18 @@
 const UserModel = require('../models/user');
+const AdminModel = require('../models/admin');
 
 async function login(payload) {
     try {
-        const existingUser = await UserModel.findOne({
-            'email': payload.email,
-            'password': payload.password
-        });
+        let user = await UserModel.findOne({ 'email': payload.email,
+        'password': payload.password });
+        if (!user) {
+            user = await AdminModel.findOne({ 'email': payload.email,
+            'password': payload.password });
+        }
 
-        if (existingUser) {
+        if (user) {
             console.log('Here');
-            return { status: 200, message: 'Logged In Successfully!', data: existingUser };
+            return { status: 200, message: 'Logged In Successfully!', data: user };
         } else {
             return { status: 400, message: 'Incorrect Credentials', data: null };
         }

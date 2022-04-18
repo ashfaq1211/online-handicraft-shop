@@ -128,32 +128,57 @@
         font-family: 'Source Code Pro';
         text-shadow: 0 1px 1px rgba(0, 0, 0, .6);
     }
+
+    .just-padding {
+        padding: 15px;
+    }
+
+    .list-group.list-group-root {
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .list-group.list-group-root .list-group {
+        margin-bottom: 0;
+    }
+
+    .list-group.list-group-root .list-group-item {
+        border-radius: 0;
+        border-width: 1px 0 0 0;
+    }
+
+    .list-group.list-group-root>.list-group-item:first-child {
+        border-top-width: 0;
+    }
+
+    .list-group.list-group-root>.list-group>.list-group-item {
+        padding-left: 30px;
+    }
+
+    .list-group.list-group-root>.list-group>.list-group>.list-group-item {
+        padding-left: 45px;
+    }
 </style>
 
 <body>
     <div class="container">
         <br>
-        <form action="/upload" method="post">
-            <div class="form-group">
-                <label>Name</label>
-                <input class="form-control" type="text" name="name" id="name" placeholder="name">
-                <label>Type</label>
-                <input class="form-control" type="text" name="type" id="type" placeholder="type">
-                <label>Price</label>
-                <input class="form-control" type="number" name="price" id="price" placeholder="price">
-                <label>Discount</label>
-                <input class="form-control" type="number" name="discount" id="discount" placeholder="discount">
-                <label>Description</label>
-                <input class="form-control" type="text" name="description" id="description" placeholder="description">
-                <label>Quantity</label>
-                <input class="form-control" type="number" name="quantity" id="quantity" placeholder="quantity">
-                <label>Image URL</label>
-                <input class="form-control" type="text" name="image" id="image" placeholder="image">
-                <!-- <label>Image</label>
-                <input class="form-control" type="file" name="image" id="image"> -->
+        <div class="just-padding">
+
+            <% customers.forEach( (customer, index) => { %>
+            <div class="list-group list-group-root well">
+
+                <a href="#" class="list-group-item"><%=customer.name%> | <%=customer.email%></a>
+                <div class="list-group">
+                    <% customer.purchasedItems.forEach( (item, index) => { %>
+                    <a href="#" class="list-group-item">SL: <%=index + 1%>  |  Product: <%=item.product.name%>  |  Quantity: <%=item.quantity%>  |  Amount: ৳ <%=(item.product.price - item.product.discount) * item.quantity%></a>
+                    <% }) %>
+                </div>
+               
             </div>
-            <button class="btn btn-primary" type="submit">Upload</button>
-        </form>
+            <% }) %>
+
+        </div>
     </div>
     <div class="footer-padding"></div>
     <div class="footer">

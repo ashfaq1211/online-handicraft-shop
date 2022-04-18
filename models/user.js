@@ -13,6 +13,11 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    type: {
+        type: String,
+        required: true,
+        default: 'customer'
+    },
     cart: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'cart'
