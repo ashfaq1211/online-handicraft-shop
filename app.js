@@ -196,16 +196,15 @@ app.get('/addToCart/:id', async (req, res) => {
                 cart.totalPrice += product.price;
                 cart.totalDiscount += product.discount;
                 await CartModel.findOneAndUpdate({ _id: cart._id }, cart);
-                res.status(200).send('Product Quantity Updated In Cart');
+                res.redirect('/cart');
             };
         });        
-    };
-    if (cart && user && cart.products.length <= 0) {
+    } else if (cart && user && cart.products.length <= 0) {
         cart.products.push({ product: product._id, quantity: 1 });
         cart.totalPrice += product.price;
         cart.totalDiscount += product.discount;
         await CartModel.findOneAndUpdate({ _id: cart._id }, cart);
-        res.status(200).send('Product Added To Cart');
+        res.redirect('/cart');
     } else if (user && !cart) {
         const cart = {
             user: user._id,
@@ -217,7 +216,7 @@ app.get('/addToCart/:id', async (req, res) => {
         const newCart = new CartModel(cart);
         const cartId = await newCart.save();
         await UserModel.findOneAndUpdate({ _id: user._id }, { $set: { cart: cartId } })
-        res.status(200).send('Product Added to Cart');
+        res.redirect('/cart');
     } else {
         res.redirect('/logout');
     };
@@ -231,11 +230,15 @@ app.get('/checkoutFromCart', async (req, res) => {
         cart.products.forEach( product => {
             user.purchasedItems.push(product)
         });
+        await UserModel.findOneAndUpdate({ _id: user._id }, { $push: { purchasedItems: product } });
+        res.redirect('/account');
     } else {
         user.purchasedItems = [];
         cart.products.forEach( product => {
             user.purchasedItems.push(product)
         });
+        await UserModel.findOneAndUpdate({ _id: user._id }, { $set: { purchasedItems: user.purchasedItems } });
+        res.redirect('/account');
     }
 });
 
