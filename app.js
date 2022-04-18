@@ -129,13 +129,13 @@ app.post('/upload', async (req, res) => {
     let data = await req.body;
     const product = new ProductModel(data);
     product.save();
-    res.redirect('/');
+    res.redirect('/upload');
 });
 
 
 app.get('/customerAndOrders', async (req, res) => {
     if (req.session && req.session.loggedin && req.session.type == 'admin') {
-        const customers = await UserModel.find({}).populate('purchasedItems.product')
+        const customers = await UserModel.find({}).populate('orders.products.product')
         res.render('customer-and-orders', { customers: customers })
     } else {
         res.redirect('/');
@@ -186,12 +186,14 @@ app.get('/addToCart/:id', async (req, res) => {
     const product = await ProductModel.findOne({ _id: id });
     const user = await UserModel.findOne({ email: req.session.email });
     const cart = await CartModel.findOne({ user: user._id }).populate('products.product');
+    let flag = true;
     if (cart && user && cart.products.length > 0) {
         cart.products.forEach( async (productData, index) => {
             console.log('====================================');
             console.log('PRODUCT => ', productData.product);
             console.log('====================================');
             if (id == productData.product._id) {
+                flag = false;
                 cart.products[index].quantity += 1;
                 cart.totalPrice += product.price;
                 cart.totalDiscount += product.discount;
@@ -199,13 +201,15 @@ app.get('/addToCart/:id', async (req, res) => {
                 res.redirect('/cart');
             };
         });        
-    } else if (cart && user && cart.products.length <= 0) {
+    };
+    if (cart && user && flag == true) {
+        flag = false;
         cart.products.push({ product: product._id, quantity: 1 });
         cart.totalPrice += product.price;
         cart.totalDiscount += product.discount;
         await CartModel.findOneAndUpdate({ _id: cart._id }, cart);
         res.redirect('/cart');
-    } else if (user && !cart) {
+    } else if (user && !cart && flag == true) {
         const cart = {
             user: user._id,
             products: [{ product: product._id, quantity: 1 }],
@@ -217,34 +221,27 @@ app.get('/addToCart/:id', async (req, res) => {
         const cartId = await newCart.save();
         await UserModel.findOneAndUpdate({ _id: user._id }, { $set: { cart: cartId } })
         res.redirect('/cart');
-    } else {
-        res.redirect('/logout');
-    };
+    }
 });
 
 // ADD TO PURCHASED FROM CART
 app.get('/checkoutFromCart', async (req, res) => {
     const user = await UserModel.findOne({ email: req.session.email });
     const cart = await CartModel.findOne({ user: user._id }).populate('products.product');
-    if ( user.purchasedItems && user.purchasedItems.length > 0 ) {
-        cart.products.forEach( product => {
-            user.purchasedItems.push(product)
-        });
-        await UserModel.findOneAndUpdate({ _id: user._id }, { $push: { purchasedItems: product } });
+    if ( user.orders && user.orders.length > 0 ) {
+        await UserModel.findOneAndUpdate({ user: user._id }, { $push: {orders: cart} });
+        await CartModel.findOneAndUpdate({ user: user._id }, { $set: {products: [], totalPrice: 0, totalDiscount: 0} });
         res.redirect('/account');
     } else {
-        user.purchasedItems = [];
-        cart.products.forEach( product => {
-            user.purchasedItems.push(product)
-        });
-        await UserModel.findOneAndUpdate({ _id: user._id }, { $set: { purchasedItems: user.purchasedItems } });
+        await UserModel.findOneAndUpdate({ _id: user._id }, { $push: { orders: cart } });
+        await CartModel.findOneAndUpdate({ user: user._id }, { $set: {products: [], totalPrice: 0, totalDiscount: 0} });
         res.redirect('/account');
     }
 });
 
 // USER ACCOUNT
 app.get('/account', async (req, res) => {
-    const user = await UserModel.findOne({ email: req.session.email }).populate('purchasedItems.product');
+    const user = await UserModel.findOne({ email: req.session.email }).populate('orders.products.product');
     if (req.session && req.session.loggedin) {
         res.render('account', { isLoggedIn: true, email: req.session.email, user } );
     } else {

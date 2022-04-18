@@ -185,13 +185,19 @@
 
             <hr>
 
+            <% if (user.orders) { user.orders.forEach( (item, index) => { %>
             <div class="list-group list-group-root well">
-
-                <% if (user.purchasedItems) { user.purchasedItems.forEach( (item, index) => { %>
-                <a href="#" class="list-group-item">SL: <%=index + 1%>  |  Product: <%=item.product.name%>  |  Quantity: <%=item.quantity%>  |  Amount: ৳ <%=(item.product.price - item.product.discount) * item.quantity%></a>
-                <% }) } %>
+               
+                <a href="#" class="list-group-item">SL: <%=index + 1%>  |  Order Id: <%=item._id%>  |  Total Price: ৳ <%=item.totalPrice%>  |  Total Price With Discount: ৳ <%=item.totalPrice - item.totalDiscount%></a>
+                <div class="list-group">
+                    <% if (item.products) { item.products.forEach( (product, index) => { %>
+                    <a href="#" class="list-group-item">Product: <%=product.product.name%>  |  Quantity: <%=product.quantity%>  |  Amount: ৳ <%=(product.product.price - product.product.discount) * product.quantity%></a>
+                    <% }) } %>
+                </div>
                
             </div>
+            <hr>
+            <% }) } %>
 
         </div>
     </div>

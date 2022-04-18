@@ -170,7 +170,7 @@
 
                 <a href="#" class="list-group-item"><%=customer.name%> | <%=customer.email%></a>
                 <div class="list-group">
-                    <% customer.purchasedItems.forEach( (item, index) => { %>
+                    <% customer.orders.forEach( (item, index) => { %>
                     <a href="#" class="list-group-item">SL: <%=index + 1%>  |  Product: <%=item.product.name%>  |  Quantity: <%=item.quantity%>  |  Amount: ৳ <%=(item.product.price - item.product.discount) * item.quantity%></a>
                     <% }) %>
                 </div>
