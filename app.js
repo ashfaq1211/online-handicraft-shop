@@ -52,14 +52,14 @@ app.post('/postSignUpForm', async (req, res) => {
     const data = await singUp(req.body);
     console.log(data);
     if (data && data.status == 200) {
-        res.redirect('/getLoginForm');
+        res.redirect('/login');
     } else if (data) {
         res.redirect(`/getSignUpForm/${data.status}`);
     }
 });
 
 // LOGIN
-app.get('/getLoginForm', async (req, res) => {
+app.get('/login', async (req, res) => {
     res.render('login-form');
 });
 app.post('/postLoginForm', async (req, res) => {
@@ -75,7 +75,7 @@ app.post('/postLoginForm', async (req, res) => {
             res.redirect('/admin');
         }
     } else {
-        res.redirect('/getLoginForm');
+        res.redirect('/login');
     }
 });
 
