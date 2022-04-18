@@ -59,7 +59,7 @@ app.post('/postSignUpForm', async (req, res) => {
 });
 
 // LOGIN
-app.get('/login', async (req, res) => {
+app.get('/getLoginForm', async (req, res) => {
     res.render('login-form');
 });
 app.post('/postLoginForm', async (req, res) => {
