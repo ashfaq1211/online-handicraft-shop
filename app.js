@@ -8,17 +8,6 @@ const mongoose = require('mongoose');
 const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
-const nodemailer = require('nodemailer');
-let testAccount = nodemailer.createTestAccount();
-const sendMail = nodemailer.createTransport({
-    host: "smtp.ethereal.email",
-    port: 587,
-    secure: false, // true for 465, false for other ports
-    auth: {
-      user: testAccount.user, // generated ethereal user
-      pass: testAccount.pass, // generated ethereal password
-    }
-});
 
 const UserModel = require('./models/user');
 const AdminModel = require('./models/admin');
@@ -248,19 +237,6 @@ app.get('/checkoutFromCart', async (req, res) => {
             user.purchasedItems.push(product)
         });
     }
-    await UserModel.findOneAndUpdate({ _id: user._id }, user);
-    sendMail.sendMail({
-        from: 'ashfaqulislam1211@gmail.com',
-        to: req.session.email,
-        subject: 'Purchase Receipt',
-        text: ``
-    }, (err, info) => {
-        if (err) {
-            console.log('Send Mail Error => ', err);
-        } else {
-            console.log('Send Mail Info => ', info);
-        }
-    });
 });
 
 // USER ACCOUNT
